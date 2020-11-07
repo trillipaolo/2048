@@ -10,7 +10,7 @@ class MDP_2048():
 
         self.rand = np.random.RandomState(datetime.now().microsecond if seed is None else seed)
         self.state = np.zeros(cts.BOARD_DIMENSION, dtype=int)
-
+        self.reward = 0
         self.actions = [cts.MOVE_RIGHT, cts.MOVE_LEFT, cts.MOVE_UP, cts.MOVE_DOWN]
 
     def initialize_state(self):
@@ -47,7 +47,8 @@ class MDP_2048():
         return
 
     def reward_function(self):
-        return self.state.sum()
+        self.reward = self.state.sum()
+        return self.reward
 
     @staticmethod
     def __rotate_before_compact(state, action):
@@ -55,7 +56,7 @@ class MDP_2048():
             return np.flip(state, axis=1)
         elif action == cts.MOVE_UP:
             return state.T
-        elif action == cts.MOVE_UP:
+        elif action == cts.MOVE_DOWN:
             return np.flip(state.T, axis=1)
         else:
             return state
@@ -64,8 +65,9 @@ class MDP_2048():
     def __compact_tiles(state):
         def compact_row(row):
             length = len(row)
-            for i in range(length - 1):
-                if row[i] == row[i + 1] & row[i] != 0:
+            row = row[np.where(row > 0)]
+            for i in range(len(row) - 1):
+                if row[i] == row[i + 1] and row[i] != 0:
                     row[i] += 1
                     row[i + 1] = 0
             row = row[np.where(row > 0)]
@@ -80,7 +82,7 @@ class MDP_2048():
             return np.flip(state, axis=1)
         elif action == cts.MOVE_UP:
             return state.T
-        elif action == cts.MOVE_UP:
+        elif action == cts.MOVE_DOWN:
             return np.flip(state, axis=1).T
         else:
             return state
@@ -102,4 +104,14 @@ class MDP_2048():
         return state
 
     def print_state(self):
-        print(" " + str(self.state).replace("[", "").replace("]", ""))
+        def print_line(length):
+            print("+" + "-" * (length - 2) + "+")
+
+        board = str(self.state)\
+            .replace("[[", "| ").replace("]]", " |")\
+            .replace(" [", "| ").replace("]", " |")\
+            .replace("0", " ")
+
+        print_line(int(len(board) / cts.BOARD_DIMENSION[0]))
+        print(board)
+        print_line(int(len(board) / cts.BOARD_DIMENSION[0]))
