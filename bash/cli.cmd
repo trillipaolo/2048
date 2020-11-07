@@ -1,1 +1,0 @@
-..\venv\scripts\python ..\src\launchers\cli.py
