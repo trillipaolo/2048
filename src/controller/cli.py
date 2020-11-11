@@ -29,28 +29,41 @@ def get_action(last):
         return cts.MOVE_DOWN, curr
 
 
-def main():
+def print_board(state, score):
+    board = np.power(2, state)
+    board[state == 0] = 0
+
+    def print_line(length):
+        print("+" + "-" * (length - 2) + "+")
+
+    system('cls')
+    print("SCORE:", score, '\n')
+
+    str_board = str(board) \
+        .replace("[[", "| ").replace("]]", " |") \
+        .replace(" [", "| ").replace("]", " |") \
+        .replace("0", " ")
+
+    print_line(int(len(str_board) / cts.BOARD_DIMENSION[0]))
+    print(str_board)
+    print_line(int(len(str_board) / cts.BOARD_DIMENSION[0]))
+
+
+def game():
     last_key = np.zeros(4, dtype=int)
-    reward = 0
+
     model = MDP_2048()
     model.initialize_state()
-    print("SCORE:", reward)
-    model.print_state()
 
-    while not keyboard.is_pressed("esc"):
+    print_board(model.get_state(), model.get_score())
+
+    while not keyboard.is_pressed("esc") and not model.termination_state():
 
         action, last_key = get_action(last_key)
 
         if action is not None:
             model.transition_function(action)
-            reward = model.reward_function()
 
-            system('clear')
-            print("SCORE:", reward)
-            model.print_state()
+            print_board(model.get_state(), model.get_score())
 
-    print("\nGAME ENDED, SCORE =", reward)
-
-
-if __name__ == "__main__":
-    main()
+    print("\nGAME ENDED, SCORE =", model.get_score())
